@@ -1,0 +1,6 @@
+{
+  "name": "Cổng thông tin điện tử Viện kiểm sát nhân dân",
+  "description": "Cổng thông tin điện tử chính thức Viện kiểm sát nhân dân - Tin tức hoạt động, văn bản pháp luật, tra cứu chỉ đạo điều hành và dịch vụ công",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
