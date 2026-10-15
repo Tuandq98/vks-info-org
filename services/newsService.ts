@@ -2,13 +2,30 @@ import { mockArticles } from '@/data/mockNews';
 import { NewsArticle, NewsFilterParams, PaginatedResult } from '@/types/news';
 import { apiRequest } from './apiClient';
 
+function getCombinedArticles(): NewsArticle[] {
+  if (typeof window !== 'undefined') {
+    try {
+      const stored = localStorage.getItem('vks_custom_articles');
+      if (stored) {
+        const custom: NewsArticle[] = JSON.parse(stored);
+        if (Array.isArray(custom) && custom.length > 0) {
+          return [...custom, ...mockArticles];
+        }
+      }
+    } catch {
+      // ignore
+    }
+  }
+  return mockArticles;
+}
+
 export const newsService = {
   // Lấy tin nổi bật / tiêu điểm
   async getFeaturedNews(): Promise<NewsArticle[]> {
     return apiRequest<NewsArticle[]>(
       '/api/v1/news/featured',
       { method: 'GET' },
-      () => mockArticles.filter((article) => article.isFeatured)
+      () => getCombinedArticles().filter((article) => article.isFeatured)
     );
   },
 
@@ -17,7 +34,10 @@ export const newsService = {
     return apiRequest<NewsArticle[]>(
       `/api/v1/news/latest?limit=${limit}`,
       { method: 'GET' },
-      () => [...mockArticles].sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()).slice(0, limit)
+      () =>
+        [...getCombinedArticles()]
+          .sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime())
+          .slice(0, limit)
     );
   },
 
@@ -27,7 +47,8 @@ export const newsService = {
       `/api/v1/news/${idOrSlug}`,
       { method: 'GET' },
       () => {
-        const found = mockArticles.find(
+        const all = getCombinedArticles();
+        const found = all.find(
           (article) => article.id === idOrSlug || article.slug === idOrSlug
         );
         return found || null;
@@ -41,7 +62,7 @@ export const newsService = {
       `/api/v1/news/${articleId}/related?limit=${limit}`,
       { method: 'GET' },
       () => {
-        return mockArticles
+        return getCombinedArticles()
           .filter((a) => a.id !== articleId && (a.category === category || a.isFeatured))
           .slice(0, limit);
       }
@@ -63,7 +84,7 @@ export const newsService = {
       }).toString()}`,
       { method: 'GET' },
       () => {
-        let filtered = [...mockArticles];
+        let filtered = [...getCombinedArticles()];
 
         if (category && category !== 'tat-ca') {
           filtered = filtered.filter((a) => a.category === category);
